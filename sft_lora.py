@@ -1,5 +1,4 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from datasets import load_dataset
 import transformers
 from transformers import Trainer, TrainingArguments
@@ -12,19 +11,26 @@ from peft import (
     set_peft_model_state_dict,
 )
 import torch
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--data_path", type=str, help="data_path")
+parser.add_argument("--model_name_or_path", type=str, help="model_name_or_path")
+args = parser.parse_args()
+DATA_PATH = args.data_path
+MODEL_NAME_OR_PATH = args.model_name_or_path
+OUTPUT_DIR = "baichuansft"
 
 ### 定义一些配置信息
-CUTOFF_LEN = 1024  
-VAL_SET_SIZE = 2000
-DATA_PATH = "./dataset/Belle_open_source_0.5M.json" 
-OUTPUT_DIR = "baichuansft"
+CUTOFF_LEN = 1024
+VAL_SET_SIZE = 2
+# VAL_SET_SIZE = 2000
 resume_from_checkpoint = "baichuansft"
 
-
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 device_map = {"": 0}
-tokenizer = AutoTokenizer.from_pretrained("./baichuan-7B",trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained("./baichuan-7B",
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME_OR_PATH, trust_remote_code=True)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME_OR_PATH,
                                              trust_remote_code=True,
                                              quantization_config=BitsAndBytesConfig(
                                                  load_in_4bit=True,
@@ -38,21 +44,23 @@ model = prepare_model_for_kbit_training(model)
 
 ### 所有的线性layer都装配上lora
 import bitsandbytes as bnb
+
+
 def find_all_linear_names(model):
-    #cls = bnb.nn.Linear8bitLt 
-    cls = bnb.nn.Linear4bit 
+    # cls = bnb.nn.Linear8bitLt
+    cls = bnb.nn.Linear4bit
     lora_module_names = set()
     for name, module in model.named_modules():
         if isinstance(module, cls):
             names = name.split('.')
             lora_module_names.add(names[0] if len(names) == 1 else names[-1])
 
-
-    if 'lm_head' in lora_module_names: # needed for 16-bit
+    if 'lm_head' in lora_module_names:  # needed for 16-bit
         lora_module_names.remove('lm_head')
     return list(lora_module_names)
-modules = find_all_linear_names(model)
 
+
+modules = find_all_linear_names(model)
 
 config = LoraConfig(
     r=8,
@@ -62,7 +70,6 @@ config = LoraConfig(
     target_modules=modules,
     task_type="CAUSAL_LM",
 )
-
 
 model = get_peft_model(model, config)
 tokenizer.pad_token_id = 0
@@ -87,8 +94,8 @@ if resume_from_checkpoint:
     else:
         print(f"Checkpoint {checkpoint_name} not found")
 
-
 data = load_dataset("json", data_files=DATA_PATH)
+
 
 def tokenize(prompt, add_eos_token=True):
     result = tokenizer(
@@ -151,7 +158,7 @@ trainer = Trainer(
         eval_steps=2000 if VAL_SET_SIZE > 0 else None,
         save_steps=2000,
         output_dir=OUTPUT_DIR,
-        report_to = "tensorboard",
+        report_to="tensorboard",
         save_total_limit=3,
         load_best_model_at_end=True if VAL_SET_SIZE > 0 else False,
         optim="adamw_torch"
@@ -161,7 +168,6 @@ trainer = Trainer(
                                                       return_tensors="pt",
                                                       padding=True),
 )
-
 
 trainer.train(resume_from_checkpoint=False)
 model.save_pretrained(OUTPUT_DIR)
