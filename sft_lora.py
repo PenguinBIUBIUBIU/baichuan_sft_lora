@@ -12,6 +12,8 @@ from peft import (
 )
 import torch
 import argparse
+import time
+start_time=time.time()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, help="data_path")
@@ -44,7 +46,8 @@ model = AutoModelForCausalLM.from_pretrained(MODEL_NAME_OR_PATH,
                                              device_map=device_map)
 
 model = prepare_model_for_kbit_training(model)
-
+time01 = time.time()
+print(f"加载模型用时:{time01-start_time}")
 ### 所有的线性layer都装配上lora
 import bitsandbytes as bnb
 
@@ -174,4 +177,6 @@ trainer = Trainer(
 
 trainer.train(resume_from_checkpoint=False)
 print(f"{DATA_PATH}:训练完成")
+time02=time.time()
+print(f"模型训练用时:{time02-time01}")
 model.save_pretrained(OUTPUT_DIR)

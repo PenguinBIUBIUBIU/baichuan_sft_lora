@@ -10,6 +10,8 @@ from peft import (
 import torch
 
 import argparse
+import time
+start_time = time.time()
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, help="data_path")
@@ -41,7 +43,8 @@ model_lora = PeftModel.from_pretrained(
     model,
     LORA_WEIGHTS
 ).to(device)
-
+time01 = time.time()
+print(f"加载模型用时:{time01-start_time}")
 
 ###进行预测
 device = "cuda:0"
@@ -66,3 +69,5 @@ generate_ids = model_lora.generate(**inputs, generation_config=generation_config
 output = tokenizer.decode(generate_ids[0])
 print("ANSWER:")
 print(output)
+time02=time.time()
+print(f"预测用时:{time02-time01}")
