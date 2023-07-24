@@ -145,7 +145,7 @@ if VAL_SET_SIZE > 0:
 else:
     train_data = data['train'].shuffle().map(generate_and_tokenize_prompt)
     val_data = None
-
+print(f"{DATA_PATH}:开始训练")
 trainer = Trainer(
     model=model,
     train_dataset=train_data,
@@ -173,4 +173,5 @@ trainer = Trainer(
 )
 
 trainer.train(resume_from_checkpoint=False)
+print(f"{DATA_PATH}:训练完成")
 model.save_pretrained(OUTPUT_DIR)

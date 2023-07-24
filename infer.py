@@ -21,6 +21,7 @@ MODEL_NAME_OR_PATH = args.model_name_or_path
 OUTPUT_DIR = args.output_dir
 ###加载量化模型
 device_map = {"": 0}
+print(f"{MODEL_NAME_OR_PATH}:加载模型")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME_OR_PATH,trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(MODEL_NAME_OR_PATH,
                                              trust_remote_code=True,
@@ -35,6 +36,7 @@ model = AutoModelForCausalLM.from_pretrained(MODEL_NAME_OR_PATH,
 ###组装lora
 LORA_WEIGHTS = OUTPUT_DIR
 device = "cuda:0"
+print(f"{OUTPUT_DIR}:PEFT加载模型")
 model_lora = PeftModel.from_pretrained(
     model,
     LORA_WEIGHTS
@@ -56,9 +58,11 @@ generation_config = GenerationConfig(
 prompt = """
       北京有啥好玩的地方
        """
+print(f"prompt:{prompt}")
 inputttext ="""###Human:\n{}###Assistant:\n:
 """.format(prompt)
 inputs = tokenizer(prompt,return_tensors="pt").to(device)
 generate_ids = model_lora.generate(**inputs, generation_config=generation_config)
 output = tokenizer.decode(generate_ids[0])
+print("ANSWER:")
 print(output)
