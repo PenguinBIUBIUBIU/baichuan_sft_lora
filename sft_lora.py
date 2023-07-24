@@ -16,16 +16,19 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, help="data_path")
 parser.add_argument("--model_name_or_path", type=str, help="model_name_or_path")
+parser.add_argument("--output_dir", type=str, help="output_dir")
+parser.add_argument("--loar_rk", type=str, default="4", help="loar_rk")
 args = parser.parse_args()
 DATA_PATH = args.data_path
 MODEL_NAME_OR_PATH = args.model_name_or_path
-OUTPUT_DIR = "baichuansft"
+OUTPUT_DIR = args.output_dir
+LORA_RK = args.lora_rk
 
 ### 定义一些配置信息
 CUTOFF_LEN = 1024
 VAL_SET_SIZE = 2
 # VAL_SET_SIZE = 2000
-resume_from_checkpoint = "baichuansft"
+resume_from_checkpoint = OUTPUT_DIR
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 device_map = {"": 0}
@@ -63,7 +66,7 @@ def find_all_linear_names(model):
 modules = find_all_linear_names(model)
 
 config = LoraConfig(
-    r=8,
+    r=LORA_RK,
     lora_alpha=16,
     lora_dropout=0.05,
     bias="none",
