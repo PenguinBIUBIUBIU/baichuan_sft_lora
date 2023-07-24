@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, help="data_path")
 parser.add_argument("--model_name_or_path", type=str, help="model_name_or_path")
 parser.add_argument("--output_dir", type=str, help="output_dir")
-parser.add_argument("--loar_rk", type=str, default="4", help="loar_rk")
+parser.add_argument("--lora_rk", type=str, default="4", help="lora_rk")
 args = parser.parse_args()
 DATA_PATH = args.data_path
 MODEL_NAME_OR_PATH = args.model_name_or_path
