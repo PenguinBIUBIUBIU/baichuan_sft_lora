@@ -14,11 +14,11 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--data_path", type=str, help="data_path")
 parser.add_argument("--model_name_or_path", type=str, help="model_name_or_path")
+parser.add_argument("--output_dir", type=str, help="output_dir")
 args = parser.parse_args()
 DATA_PATH = args.data_path
 MODEL_NAME_OR_PATH = args.model_name_or_path
-OUTPUT_DIR = "baichuansft"
-
+OUTPUT_DIR = args.output_dir
 ###加载量化模型
 device_map = {"": 0}
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME_OR_PATH,trust_remote_code=True)
