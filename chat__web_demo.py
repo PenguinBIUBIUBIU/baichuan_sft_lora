@@ -30,6 +30,14 @@ temperature = st.sidebar.slider(
     'temperature', 0.0, 1.0, 0.8, step=0.01
 )
 
+generation_config = GenerationConfig(
+    temperature=temperature,
+    top_p=top_p,
+    do_sample=True,
+    repetition_penalty=2.0,
+    max_new_tokens=max_new_tokens,  # max_length=max_new_tokens+input_sequence
+)
+
 @st.cache_resource
 def init_model():
     ###加载量化模型
@@ -45,14 +53,6 @@ def init_model():
                                                      bnb_4bit_quant_type='nf4'
                                                  ),
                                                  device_map=device_map)
-
-    generation_config = GenerationConfig(
-        temperature=temperature,
-        top_p=top_p,
-        do_sample=True,
-        repetition_penalty=2.0,
-        max_new_tokens=max_new_tokens,  # max_length=max_new_tokens+input_sequence
-    )
     model.generation_config = generation_config
 
     ###组装lora
@@ -97,7 +97,7 @@ def main():
 
         inputttext = f"###Human:\n{prompt}###Assistant:\n:"
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
-        generate_ids = model.generate(**inputs)
+        generate_ids = model.generate(**inputs, generation_config=generation_config)
         response = tokenizer.decode(generate_ids[0])
 
         with st.chat_message("assistant", avatar='🤖'):
