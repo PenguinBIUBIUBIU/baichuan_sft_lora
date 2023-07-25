@@ -6,9 +6,9 @@ from transformers import BitsAndBytesConfig, GenerationConfig
 from peft import PeftModel
 
 import sys
-if len(sys.argv) >= 4:
+if len(sys.argv) >= 3:
     MODEL_NAME_OR_PATH = sys.argv[1]
-    LORA_WEIGHTS_PATH = sys.argv[3]
+    LORA_WEIGHTS_PATH = sys.argv[2]
 else:
     print("Usage: python chat__web_demo.py [MODEL_NAME_OR_PATH] [LORA_WEIGHTS_PATH]")
     sys.exit(1)
