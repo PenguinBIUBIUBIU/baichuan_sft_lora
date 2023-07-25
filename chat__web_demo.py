@@ -85,6 +85,7 @@ def init_chat_history():
     return st.session_state.messages
 
 def main():
+    device = "cuda:0"
     model, tokenizer = init_model()
     messages = init_chat_history()
 
@@ -93,12 +94,15 @@ def main():
             st.markdown(prompt)
         messages.append({"role": "user", "content": prompt})
         print(f"[user] {prompt}", flush=True)
+
+        inputttext = f"###Human:\n{prompt}###Assistant:\n:"
+        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+        generate_ids = model.generate(**inputs)
+        response = tokenizer.decode(generate_ids[0])
+
         with st.chat_message("assistant", avatar='🤖'):
             placeholder = st.empty()
-            for response in model.chat(tokenizer, messages, stream=True):
-                placeholder.markdown(response)
-                if torch.backends.mps.is_available():
-                    torch.mps.empty_cache()
+            placeholder.markdown(response)
         messages.append({"role": "assistant", "content": response})
         print(json.dumps(messages, ensure_ascii=False), flush=True)
 
@@ -106,3 +110,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+print(output)
