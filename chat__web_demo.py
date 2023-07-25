@@ -5,15 +5,13 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import BitsAndBytesConfig, GenerationConfig
 from peft import PeftModel
 
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument("--data_path", type=str, help="data_path")
-parser.add_argument("--model_name_or_path", type=str, help="model_name_or_path")
-parser.add_argument("--output_dir", type=str, help="output_dir")
-args = parser.parse_args()
-DATA_PATH = args.data_path
-MODEL_NAME_OR_PATH = args.model_name_or_path
-OUTPUT_DIR = args.output_dir
+import sys
+if len(sys.argv) >= 4:
+    MODEL_NAME_OR_PATH = sys.argv[1]
+    LORA_WEIGHTS_PATH = sys.argv[3]
+else:
+    print("Usage: python chat__web_demo.py [MODEL_NAME_OR_PATH] [LORA_WEIGHTS_PATH]")
+    sys.exit(1)
 
 st.set_page_config(
     page_title="baichuan-7B-int4 演示",
@@ -58,12 +56,11 @@ def init_model():
     model.generation_config = generation_config
 
     ###组装lora
-    LORA_WEIGHTS = OUTPUT_DIR
     device = "cuda:0"
-    print(f"{OUTPUT_DIR}:PEFT加载模型")
+    print(f"{LORA_WEIGHTS_PATH}:PEFT加载模型")
     model_lora = PeftModel.from_pretrained(
         model,
-        LORA_WEIGHTS
+        LORA_WEIGHTS_PATH
     ).to(device)
     model_lora = model_lora.eval()
     return tokenizer, model_lora
