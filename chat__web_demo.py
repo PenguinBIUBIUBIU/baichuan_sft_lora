@@ -96,7 +96,7 @@ def main():
         print(f"[user] {prompt}", flush=True)
 
         inputttext = f"###Human:\n{prompt}###Assistant:\n:"
-        inputs = tokenizer(prompt, return_tensors="pt").to(device)
+        inputs = tokenizer(inputttext, return_tensors="pt").to(device)
         generate_ids = model.generate(**inputs, generation_config=generation_config)
         response = tokenizer.decode(generate_ids[0])
 
