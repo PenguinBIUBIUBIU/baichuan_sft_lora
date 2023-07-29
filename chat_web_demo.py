@@ -10,7 +10,7 @@ if len(sys.argv) >= 3:
     MODEL_NAME_OR_PATH = sys.argv[1]
     LORA_WEIGHTS_PATH = sys.argv[2]
 else:
-    print("Usage: python chat__web_demo.py [MODEL_NAME_OR_PATH] [LORA_WEIGHTS_PATH]")
+    print("Usage: python chat_web_demo.py [MODEL_NAME_OR_PATH] [LORA_WEIGHTS_PATH]")
     sys.exit(1)
 
 st.set_page_config(
